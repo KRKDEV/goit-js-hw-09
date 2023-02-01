@@ -6,25 +6,31 @@ const amountInput = document.querySelector('[name="amount"]');
 const submitBtn = document.querySelector('button');
 
 function createPromise(position, delay) {
-  const shouldResolve = Math.random() > 0.3;
-  if (shouldResolve) {
-    // Fulfill
-    Notify.success(`✅ Fulfilled promise ${position} in ${delay}ms`);
-  } else {
-    // Reject
-    Notify.failure(`❌ Rejected promise ${position} in ${delay}ms`);
-  }
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const shouldResolve = Math.random() > 0.3;
+      if (shouldResolve) {
+        // Fulfill
+        resolve({ position, delay });
+      } else {
+        // Reject
+        reject({ position, delay });
+      }
+    }, delay);
+  });
 }
 
 submitBtn.addEventListener('click', event => {
   event.preventDefault();
-  let currentDelay = parseInt(delayInput.value);
-  setTimeout(() => {
-    for (let i = 0; i < amountInput.value; i++) {
-      setTimeout(() => {
-        createPromise(i + 1, currentDelay), parseInt(stepInput.value);
-        currentDelay = currentDelay + parseInt(stepInput.value);
-      }, parseInt(stepInput.value) * i);
-    }
-  }, parseInt(delayInput.value));
+  let delay = parseInt(delayInput.value);
+  for (let i = 1; i <= Number(amountInput.value); i++) {
+    createPromise(i, delay)
+      .then(({ position, delay }) => {
+        Notify.success(`✅ Fulfilled promise ${position} in ${delay}ms`);
+      })
+      .catch(({ position, delay }) => {
+        Notify.failure(`❌ Rejected promise ${position} in ${delay}ms`);
+      });
+    delay = delay + parseInt(stepInput.value);
+  }
 });
